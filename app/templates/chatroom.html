@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chatroom - {{ chatroom.friendlyName }}</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<style>
+    .scrollable {
+        height: 400px;
+        overflow-y: scroll;
+        padding-bottom: 2em;
+    }
+    .chatmsg {
+        border-top: solid 1px black;
+        margin: 3px;
+    }
+    .username {
+        margin-right: 1em;
+    }
+
+</style>
+<body>
+    <h1>{{ chatroom.friendlyName }}</h1>
+    <a href="/chatroom_list">Chatrooms</a>
+    <br>
+    <div id="chatbox" class="scrollable"></div>
+    <form name="message" action="">
+        <input name="usermsg" type="text" id="usermsg" size="63" />
+        <input name="submitmsg" type="submit"  id="submitmsg" value="Send" />
+    </form>
+</body>
+<script>
+    let lastReq = Math.round(new Date().getTime() / 1000);
+    let seenMessages = Array();
+    function scrollToBottom (id) {
+        var div = document.getElementById(id);
+        div.scrollTop = div.scrollHeight - div.clientHeight;
+    }
+    function putNewMessages(messagesJSON) {
+        console.log(messagesJSON);
+        for (let message of messagesJSON) {
+            if (seenMessages.includes(message.message_id)) {
+
+            } else {
+                console.log(messagesJSON)
+                scrollToBottom("chatbox")
+                $("#chatbox").append(
+                    `<div class="chatmsg"><span class="username">${message.user}</span><span class="messageText">${message.text}</span></div>`
+                )
+                seenMessages.push(message.message_id);
+            }
+        }
+    }
+
+    function queryNewMessages() {
+        $.getJSON(
+            `/get_latest_messages/{{ chatroom.code }}?last_poll=${lastReq}`,
+            putNewMessages
+        );
+        lastReq = Math.round(new Date().getTime() / 1000);
+    }
+
+    setInterval(queryNewMessages, 500)
+
+    $("#submitmsg").click(() => {
+        var clientmsg = $("#usermsg").val();
+        console.log(clientmsg);
+        $.post(`/send_chat/{{ chatroom.code }}?message=${clientmsg}`);
+        $("#usermsg").value = "";
+        return false;
+    });
+</script>
+</html>

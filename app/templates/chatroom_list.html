@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chatrooms</title>
+</head>
+<body>
+    <a href="/new_chat">Create A New Chat</a>
+    <ul>
+        {% for chatroom in chatrooms %}
+            <li>
+                <a href="/chat/{{ chatroom.code }}">{{ chatroom.friendlyName }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
